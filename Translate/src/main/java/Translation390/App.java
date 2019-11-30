@@ -13,18 +13,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Scanner;
+import org.apache.commons.lang3.StringUtils;
+
+//Sphinx4
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+
+import edu.cmu.sphinx.api.Configuration;
+import edu.cmu.sphinx.api.SpeechResult;
+import edu.cmu.sphinx.api.StreamSpeechRecognizer;
 
 public class App {
 
-    /**
-     * Demonstrates using the Speech API to transcribe an audio file.
-     */
     public static void main(String... args) throws Exception {
-        Speech();
+        //Speech();
+        Live();
     }
 
-    public static void  Speech() throws Exception{
+    //Demonstrates using the Speech API to transcribe an audio file.
+    public static void  Speech() throws Exception {
         // Instantiates a client
         try (SpeechClient speechClient = SpeechClient.create()) {
 
@@ -50,14 +58,39 @@ public class App {
             RecognizeResponse response = speechClient.recognize(config, audio);
             List<SpeechRecognitionResult> results = response.getResultsList();
 
+            String Sent;
+
+
             for (SpeechRecognitionResult result : results) {
                 // There can be several alternative transcripts for a given chunk of speech. Just use the
                 // first (most likely) one here.
                 SpeechRecognitionAlternative alternative = result.getAlternativesList().get(0);
                 //System.out.printf("Transcription: %s%n", alternative.getTranscript());
+                if (alternative.getConfidence() < 0.65) {
+                    System.out.println("Low Confidence");
+                }
+
+                String sent = StringUtils.join(alternative.getTranscript());
+                System.out.print(sent);
             }
 
-            System.out.printf("Transcription: %s%n", results);
         }
+    }
+
+    public static void Live() throws Exception
+    {
+        Configuration configuration = new Configuration();
+
+        configuration.setAcousticModelPath("resource:/edu/cmu/sphinx/models/en-us/en-us");
+        configuration.setDictionaryPath("resource:/edu/cmu/sphinx/models/en-us/cmudict-en-us.dict");
+        configuration.setLanguageModelPath("resource:/edu/cmu/sphinx/models/en-us/en-us.lm.bin");
+
+        StreamSpeechRecognizer recognizer = new StreamSpeechRecognizer(configuration);
+
+        SpeechResult result;
+        while ((result = recognizer.getResult()) != null) {
+            System.out.format("Hypothesis: %s\n", result.getHypothesis());
+        }
+        recognizer.stopRecognition();
     }
 }
