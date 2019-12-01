@@ -23,6 +23,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
 
@@ -44,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        final CompositeDisposable compositeDisposable = new CompositeDisposable();
         Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://serpapi.com/playground")
             .addConverterFactory(GsonConverterFactory.create())
@@ -73,15 +83,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(new SingleObserver<ImageResult>() {
                 @Override
-                public void onSubscribbe(Disposable d) {
+                public void onSubscribe(Disposable d) {
                     compositeDisposable.add(d);
                 }
-                
+
                 @Override
-                public void onSuccess(ImageResult result) { 
+                public void onSuccess(ImageResult result) {
                     ImageView imageView = findViewById(R.id.my_image_view);
-                    Glide.with(this).load(result[0].getOriginal()).into(imageView);
-                }  
+                    Glide.with(this).load(result.getOriginal()).into(imageView);
+                }
+                public void onError(Throwable e) {
+
+                }
             });
     }
 

@@ -1,4 +1,8 @@
-import java.lang.String;
+package com.example.focus390;
+
+import io.reactivex.Single;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
 
 public interface GoogleAPIService {
     @GET("https://serpapi.com/playground?engine=google&q={search_text}&tbm=isch&ijn=0")
