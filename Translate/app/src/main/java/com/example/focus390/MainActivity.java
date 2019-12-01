@@ -44,14 +44,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl("https://serpapi.com/playground")
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .build();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         initDisplayStates();
         languageBar();
-
-        ImageView imageView = findViewById(R.id.my_image_view);
-        Glide.with(this).load("https://i.ytimg.com/vi/3e8uQsoh10Q/maxresdefault.jpg").into(imageView);
 
         translateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,6 +64,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 translate();
             }
         });
+
+        // create an instance of the ApiService
+        GoogleAPIService apiService = retrofit.create(GoogleAPIService.class);
+        // make a request by calling the corresponding method
+        Single<ImageResult> testResult = apiService.getImageData("apple");
+        testResult.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new SingleObserver<ImageResult>() {
+                @Override
+                public void onSubscribbe(Disposable d) {
+                    compositeDisposable.add(d);
+                }
+                
+                @Override
+                public void onSuccess(ImageResult result) { 
+                    ImageView imageView = findViewById(R.id.my_image_view);
+                    Glide.with(this).load(result[0].getOriginal()).into(imageView);
+                }  
+            });
     }
 
 
@@ -136,5 +159,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (!compositeDisposable.isDisposed()) {
+            compositeDisposable.dispose();
+        }
+        super.onDestroy();
     }
 }
