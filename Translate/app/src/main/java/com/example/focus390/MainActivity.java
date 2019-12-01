@@ -50,11 +50,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     //Access the country selected
     String countrySelected;
+    final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final CompositeDisposable compositeDisposable = new CompositeDisposable();
         Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://serpapi.com/playground")
             .addConverterFactory(GsonConverterFactory.create())
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void onSuccess(ImageResult result) {
                     ImageView imageView = findViewById(R.id.my_image_view);
-                    Glide.with(this).load(result.getOriginal()).into(imageView);
+                    Glide.with(getApplicationContext()).load(result.getResults().get(0).getOriginal()).into(imageView);
                 }
                 public void onError(Throwable e) {
 

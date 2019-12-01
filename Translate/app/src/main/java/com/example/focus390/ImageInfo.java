@@ -1,4 +1,5 @@
 package com.example.focus390;
+
 public class ImageInfo {
     private float position;
     private String thumbnail;
