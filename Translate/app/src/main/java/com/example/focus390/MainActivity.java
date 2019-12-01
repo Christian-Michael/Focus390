@@ -18,6 +18,8 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,11 +57,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        System.out.println("plzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+        Gson gson = new GsonBuilder().setLenient().create();
         Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl("https://serpapi.com/playground")
-            .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-            .build();
+                .baseUrl("https://serpapi.com/")
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .build();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -91,13 +95,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 public void onSuccess(ImageResult result) {
                     ImageView imageView = findViewById(R.id.my_image_view);
                     Glide.with(getApplicationContext()).load(result.getResults().get(0).getOriginal()).into(imageView);
+
+                    System.out.println(";laskjdflfkdsjafdslja;ksdlfjka;fdsljk;asdfaljkdfsjlk;dsfjlk;sdjlk;");
+                    System.out.println(result);
                 }
                 public void onError(Throwable e) {
-
+                    System.out.println(e.getMessage());
                 }
             });
     }
-
 
     //Sets the stage of the interactable objects
     public void initDisplayStates(){
