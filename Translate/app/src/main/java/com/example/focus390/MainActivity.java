@@ -2,6 +2,8 @@ package com.example.focus390;
 
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -36,7 +38,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, View.OnCreateContextMenuListener {
 
     //Original sentence structure
     private EditText inputText;
@@ -49,15 +51,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     Button translateButton;
     Translate translate;
     String getCountry;
+    String focusWord;
 
     //Access the country selected
     String countrySelected;
     final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        System.out.println("plzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
         Gson gson = new GsonBuilder().setLenient().create();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://serpapi.com/")
@@ -66,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 .build();
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.content_main);
 
         initDisplayStates();
         languageBar();
@@ -82,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // create an instance of the ApiService
         GoogleAPIService apiService = retrofit.create(GoogleAPIService.class);
         // make a request by calling the corresponding method
-        Single<ImageResult> testResult = apiService.getImageData("apple");
+        Single<ImageResult> testResult = apiService.getImageData(  getCountry + focusWord);
         testResult.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(new SingleObserver<ImageResult>() {
@@ -95,14 +98,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 public void onSuccess(ImageResult result) {
                     ImageView imageView = findViewById(R.id.my_image_view);
                     Glide.with(getApplicationContext()).load(result.getResults().get(0).getOriginal()).into(imageView);
-
-                    System.out.println(";laskjdflfkdsjafdslja;ksdlfjka;fdsljk;asdfaljkdfsjlk;dsfjlk;sdjlk;");
-                    System.out.println(result);
                 }
                 public void onError(Throwable e) {
                     System.out.println(e.getMessage());
                 }
             });
+
+        registerForContextMenu(inputText);
     }
 
     //Sets the stage of the interactable objects
@@ -111,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         transText = findViewById(R.id.transText);
         translateButton = findViewById(R.id.translateButton);
     }
+
 
     //Translates text
     public void translate() {
@@ -177,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-
     }
 
     @Override
@@ -186,5 +188,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             compositeDisposable.dispose();
         }
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item){
+        switch(item.getItemId()){
+            case R.id.inputText:
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        menu.add(0, 1, 0, "FOCUS");
     }
 }
